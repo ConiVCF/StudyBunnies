@@ -1,0 +1,157 @@
+/* =========================================
+   ADMIN.CSS
+   Reutiliza la misma paleta "cozy" y la misma
+   tipografía pixelada del resto del sitio,
+   pero como página propia (no como el canvas del juego).
+   ========================================= */
+
+:root {
+    --bg-dark-wood: #2c1a16;
+    --sunset-light: rgba(255, 140, 60, 0.2);
+    --ui-bg: rgba(44, 26, 22, 0.85);
+    --text-color: #fdf6e3;
+    --accent-color: #d08770;
+}
+
+body {
+    background-color: var(--bg-dark-wood);
+    color: var(--text-color);
+    font-family: 'Press Start 2P', monospace;
+    min-height: 100vh;
+    padding: 20px 0 60px;
+}
+
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.admin-topbar h1 {
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.admin-topbar .volver-link {
+    background: var(--accent-color);
+    color: var(--bg-dark-wood);
+    padding: 10px 14px;
+    border: 2px solid #000;
+    font-size: 9px;
+    text-decoration: none;
+}
+
+.admin-panel {
+    background: var(--ui-bg);
+    border: 3px solid #5d4037;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.admin-panel h2 {
+    font-size: 11px;
+    margin-bottom: 15px;
+    color: #ffcc80;
+}
+
+.form-nueva-mision {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.form-nueva-mision select,
+.form-nueva-mision input[type="text"] {
+    font-family: inherit;
+    font-size: 9px;
+    padding: 10px;
+    background: #2c1a16;
+    color: var(--text-color);
+    border: 2px solid #8d6e63;
+}
+
+.form-nueva-mision input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-nueva-mision button {
+    font-family: inherit;
+    font-size: 9px;
+    padding: 10px 14px;
+    background: #8fbc8f;
+    color: var(--bg-dark-wood);
+    border: 2px solid #000;
+    cursor: pointer;
+}
+
+.form-nueva-mision button:hover {
+    filter: brightness(1.1);
+}
+
+.tabla-wrapper {
+    overflow-x: auto;
+}
+
+table.tabla-misiones {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+}
+
+table.tabla-misiones th,
+table.tabla-misiones td {
+    border: 2px solid #5d4037;
+    padding: 10px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+table.tabla-misiones th {
+    background: #3e2723;
+    color: #ffcc80;
+}
+
+table.tabla-misiones tr.completada td {
+    opacity: 0.55;
+    text-decoration: line-through;
+}
+
+.badge-usuario {
+    background: var(--accent-color);
+    color: var(--bg-dark-wood);
+    padding: 3px 6px;
+    display: inline-block;
+}
+
+.acciones-fila {
+    display: flex;
+    gap: 6px;
+}
+
+.acciones-fila button {
+    font-family: inherit;
+    font-size: 12px;
+    background: none;
+    border: 2px solid #5d4037;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.acciones-fila .btn-borrar {
+    border-color: #e57373;
+}
+
+#admin-mensaje {
+    font-size: 9px;
+    margin-top: 10px;
+    min-height: 14px;
+}
+
+#admin-mensaje.error { color: #e57373; }
+#admin-mensaje.ok { color: #8fbc8f; }
