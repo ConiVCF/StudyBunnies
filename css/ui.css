@@ -1,0 +1,582 @@
+/* =========================================
+   CAPA PRINCIPAL DE LA UI (HUD OVERLAY)
+   ========================================= */
+#ui-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 10;
+    pointer-events: none; /* MAGIA: Los clicks traspasan para mover al conejo */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 🌟 SOLUCIÓN: Agregamos #btn-calendar y .corkboard-panel para que reciban clics */
+.top-bar, .ai-chat-box, .audio-widget, .modal-overlay, .action-menu {
+    pointer-events: auto;
+}
+
+/* =========================================
+   BARRA SUPERIOR (Stats, Timer y Ropero)
+   ========================================= */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 30px;
+}
+
+/* --- STATS Y BARRA DE EXPERIENCIA --- */
+.user-stats { 
+    display: flex; 
+    align-items: center; 
+    gap: 15px; 
+}
+.exp-bar-container { 
+    position: relative; 
+    width: 200px; 
+    height: 24px; 
+    background: #2c1a16; 
+    border: 3px solid #5d4037; 
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+.exp-bar { width: 100%; height: 100%; }
+.exp-fill { height: 100%; background: #4caf50; width: 0%; transition: width 0.5s ease; }
+.exp-text { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    text-align: center; font-size: 10px; line-height: 24px; 
+    color: white; text-shadow: 1px 1px 0 #000; 
+}
+
+/* --- TEMPORIZADOR PERSONALIZABLE --- */
+.timer-container {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.mode-label { 
+    font-size: 12px; color: #ffcc80; text-shadow: 1px 1px 0 #000; 
+}
+.timer-settings { 
+    display: flex; gap: 15px; font-size: 10px; color: #fdf6e3; text-shadow: 1px 1px 0 #000;
+}
+.timer-settings input { 
+    width: 45px; background: #2c1a16; color: #ffcc80; 
+    border: 2px solid #8d6e63; font-family: 'Press Start 2P', monospace; 
+    font-size: 10px; text-align: center; outline: none;
+}
+.pomodoro-widget {
+    font-size: 32px; color: #ffcc80; text-shadow: 3px 3px 0px #3e2723;
+    margin: 5px 0;
+}
+.timer-controls { display: flex; gap: 10px; }
+
+/* Botones estilo Pixel Art Generales */
+.btn-pixel {
+    background: #5d4037; color: #fdf6e3;
+    border: 3px solid #3e2723;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px; padding: 10px 15px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+    transition: transform 0.1s;
+}
+.btn-pixel:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px rgba(0,0,0,0.5); }
+
+
+
+/* =========================================
+   WIDGET DE AUDIO DESPLEGABLE
+   ========================================= */
+.audio-widget {
+    position: absolute; bottom: 20px; left: 20px;
+    display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 10px;
+}
+.environment-controls {
+    display: flex; flex-direction: column; gap: 8px; transition: opacity 0.3s ease;
+}
+.environment-controls.hidden {
+    opacity: 0; pointer-events: none; display: none;
+}
+
+/* =========================================
+   CHAT DEL PROFESOR IA
+   ========================================= */
+.ai-chat-box {
+    position: absolute; bottom: 20px; right: 20px; width: 350px;
+    background: rgba(62, 39, 35, 0.9); border: 4px solid #8d6e63; border-radius: 8px;
+    padding: 15px; box-shadow: 5px 5px 0px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; gap: 10px; transition: opacity 0.3s ease;
+}
+.ai-chat-box.hidden { opacity: 0; pointer-events: none; display: none !important; }
+.chat-header { font-size: 14px; color: #ffcc80; border-bottom: 2px dashed #8d6e63; padding-bottom: 10px; text-align: center; }
+.chat-history { height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 10px; line-height: 1.5; }
+#aiInput { background: #2c1a16; border: 2px solid #5d4037; color: white; font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 10px; width: 100%; box-sizing: border-box; outline: none; }
+.user-msg { align-self: flex-end; background-color: var(--accent-color); color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 80%; word-wrap: break-word; }
+.ai-msg { align-self: flex-start; background-color: #4a3631; color: var(--text-color); padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 80%; word-wrap: break-word; }
+/* --- Input y Botón de Adjuntar --- */
+.chat-input-wrapper {
+    display: flex;
+    gap: 5px;
+}
+
+#aiInput { 
+    flex-grow: 1; /* Ocupa el resto del espacio */
+    background: #2c1a16; border: 2px solid #5d4037; color: white; 
+    font-family: inherit; font-size: 10px; padding: 10px; 
+    box-sizing: border-box; outline: none; 
+}
+
+.btn-pixel-small {
+    background: #5d4037; color: #fdf6e3;
+    border: 2px solid #3e2723;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0 10px;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+.btn-pixel-small:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px rgba(0,0,0,0.5); }
+
+/* --- Vista previa del Archivo (Cartelito superior) --- */
+#attachment-preview {
+    background: rgba(74, 54, 49, 0.9);
+    border: 1px dashed #8d6e63;
+    padding: 5px 10px;
+    font-size: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    color: #ffcc80;
+}
+
+#btn-remove-attachment {
+    background: #e53935; color: white; border: 1px solid #b71c1c;
+    cursor: pointer; font-size: 8px; padding: 2px 5px; font-family: inherit;
+}
+
+
+
+
+/* =========================================
+   NUEVO VESTIDOR (MODAL Y VISTA PREVIA)
+   ========================================= */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(44, 26, 22, 0.9); display: flex; justify-content: center; align-items: center; z-index: 100;
+}
+.modal-overlay.hidden { display: none; }
+.pixel-border {
+    background: var(--ui-bg); border: 4px solid #8d6e63;
+    box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.4), 4px 4px 0px rgba(0, 0, 0, 0.6);         
+    padding: 20px; color: var(--text-color);
+}
+.modal-large { width: 550px; max-width: 95%; }
+
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8d6e63; padding-bottom: 10px; margin-bottom: 20px; }
+.modal-header h2 { font-size: 14px; margin: 0; }
+.close-btn { background: #e53935; color: white; border: 2px solid #b71c1c; font-family: inherit; cursor: pointer; }
+
+/* Maquetación del panel doble */
+.with-preview { display: flex; gap: 20px; align-items: flex-start; }
+.options-panel { flex-grow: 1; }
+
+/* La Cajita de Cristal del Conejo */
+.preview-panel { 
+    width: 150px; height: 150px; 
+    background: #2c1a16; border: 3px solid #5d4037; border-radius: 8px;
+    display: flex; justify-content: center; align-items: center;
+    position: relative; flex-shrink: 0;
+    box-shadow: inset 4px 4px 8px rgba(0,0,0,0.6);
+}
+.preview-container { position: relative; width: 105px; height: 105px; }
+.preview-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+
+/* Opciones y Botón Guardar */
+.customization-section { margin-bottom: 20px; }
+.customization-section h3 { font-size: 12px; color: var(--accent-color); margin-bottom: 10px; }
+.color-options { display: flex; gap: 10px; }
+.color-btn { width: 30px; height: 30px; border: 2px solid #5d4037; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.5); }
+.color-btn:hover, .item-btn:hover { transform: translateY(-2px); }
+.item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.item-btn { background: #5d4037; color: white; border: 2px solid #3e2723; font-family: inherit; font-size: 10px; padding: 10px 5px; cursor: pointer; text-align: center; }
+
+.modal-footer { margin-top: 10px; text-align: center; border-top: 2px dashed #8d6e63; padding-top: 20px; }
+.save-btn { background: #4caf50; border-color: #2e7d32; font-size: 14px; padding: 12px 25px; }
+.save-btn:hover { background: #66bb6a; }
+
+/* =========================================
+   NUEVO: MODAL DE CONFIGURACIÓN DEL TEMPORIZADOR
+   ========================================= */
+.setup-modal { width: 350px; text-align: center; }
+.setup-text { font-size: 10px; line-height: 1.6; margin-bottom: 20px; color: #ffcc80; }
+.timer-settings-large { display: flex; flex-direction: column; gap: 15px; align-items: center; font-size: 12px; }
+.timer-settings-large label { display: flex; justify-content: space-between; width: 200px; align-items: center; }
+.timer-settings-large input { width: 60px; background: #2c1a16; color: #ffcc80; border: 2px solid #8d6e63; font-family: inherit; font-size: 14px; text-align: center; padding: 5px; outline: none; }
+
+/* =========================================
+   LOGIN Y NAVEGACIÓN DEL MENÚ PRINCIPAL
+   ========================================= */
+.login-nav-container {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.login-nav-container:hover { transform: scale(1.05); }
+
+.login-nav-container span {
+    position: absolute;
+    top: 53%; 
+    left: 56%; 
+    transform: translate(-50%, -50%);
+    
+    font-size: 10px; 
+    font-weight: bold; 
+    color: #5d4037;
+    pointer-events: none; 
+    white-space: nowrap;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.5); 
+}
+.btn-login-img {
+    width: 250px; height: auto; image-rendering: pixelated;
+    filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.2));
+}
+
+.login-box-img {
+    width: 700px; height: 500px; position: relative;
+    background-size: contain; background-position: center; background-repeat: no-repeat;
+}
+.login-box-img.registro { background-image: url('../assets/img/registro-sesion.png'); }
+.login-box-img.login { background-image: url('../assets/img/iniciar-sesion.png'); }
+
+.input-overlay {
+    position: absolute; background: transparent; border: none; outline: none;
+    font-family: inherit; font-size: 16px; color: #5d4037;
+    left: 36%; width: 41%; height: 40px;
+}
+.user-pos { top: 33.5%; }
+.email-pos { top: 44.5%; }
+.pass-pos { top: 54.5%; }
+
+.modo-login .user-pos { top: 38%; }
+.modo-login .pass-pos { top: 55%; }
+
+.btn-hitbox, .btn-eye-hitbox {
+    position: absolute; background: transparent; border: none; outline: none; cursor: pointer;
+}
+.btn-hitbox { bottom: 18%; left: 28%; width: 45%; height: 12%; z-index: 10; }
+.btn-eye-hitbox { top: 55%; right: 23%; width: 40px; height: 30px; z-index: 15; }
+
+.btn-link {
+    background: #fff5e1; padding: 8px 20px; border: 3px solid #8d6e63;
+    border-radius: 10px; color: #8d6e63; font-weight: bold; font-family: 'Press Start 2P', monospace; font-size: 10px;
+    margin-top: 15px; box-shadow: 4px 4px 0px #5d4037; cursor: pointer;
+}
+
+/* --- ALINEACIÓN DEL MENÚ SUPERIOR IZQUIERDO --- */
+.top-left-nav {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+/* --- ALINEACIÓN DEL MENÚ SUPERIOR --- */
+.top-right-nav {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre el botón de música y el login */
+    z-index: 1000;
+}
+
+/* --- BOTÓN DE SONIDO DEL MENÚ --- */
+.btn-sonido-img {
+    width: 90px;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.3s ease;
+    filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.2));
+    opacity: 0.5; /* Inicia visualmente apagado hasta el primer click */
+}
+
+.btn-sonido-img:hover {
+    transform: scale(1.05);
+}
+
+
+/* =========================================
+   CONTROLES DE ACCESIBILIDAD (Chat IA)
+   ========================================= */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.text-size-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.txt-btn {
+    background: #5d4037;
+    color: #fdf6e3;
+    border: 1px solid #3e2723;
+    font-family: inherit;
+    font-size: 8px;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: transform 0.1s;
+}
+
+.txt-btn:active {
+    transform: scale(0.9);
+}
+
+#slider-txt-size {
+    width: 50px;
+    height: 6px;
+    margin: 0;
+}
+
+/* 🌟 Variable dinámica inyectada desde JS */
+#aiChat {
+    --chat-font-size: 10px; /* Valor por defecto */
+}
+
+/* 🌟 Aplicación del tamaño dinámico a los mensajes */
+.ai-msg, .user-msg {
+    font-size: var(--chat-font-size);
+    line-height: 1.5;
+    transition: font-size 0.2s ease-in-out; /* Animación fluida al cambiar el tamaño */
+}
+
+/* =========================================
+   PIZARRA DE MISIONES (Panel Flotante Rediseñado)
+   ========================================= */
+.corkboard-panel {
+    position: absolute;
+    top: 90px; 
+    right: 20px; /* Se ancla a la derecha de la pantalla */
+    width: 320px; /* Mucho más angosta */
+    max-height: calc(100vh - 120px); /* Nunca se sale de la pantalla */
+    background-color: #c19a6b; 
+    background-image: radial-gradient(#8d6e63 1px, transparent 1px);
+    background-size: 10px 10px;
+    border: 4px solid #5d4037;
+    border-radius: 8px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+}
+
+.corkboard-panel.hidden {
+    display: none !important;
+}
+
+.panel-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 10px 15px; 
+    border-bottom: 3px solid #3e2723;
+}
+.panel-header h2 { font-size: 12px; margin: 0; color: #fdf6e3; text-shadow: 1px 1px 0 #000; }
+
+.panel-body {
+    padding: 15px;
+    overflow-y: auto; /* Scroll interno solo para el cuerpo */
+    flex-grow: 1;
+}
+
+.add-mission-wrapper {
+    display: flex; gap: 5px; margin-bottom: 15px;
+    background: rgba(93, 64, 55, 0.8); padding: 8px; border-radius: 5px;
+}
+
+#new-mission-input {
+    flex-grow: 1; background: #fdf6e3; border: 2px solid #3e2723;
+    font-family: inherit; font-size: 9px; padding: 6px; color: #2c1a16; width: 100%;
+}
+
+.mission-stats {
+    text-align: right; font-size: 9px; color: #fdf6e3; text-shadow: 1px 1px 0px #000; margin-bottom: 10px;
+}
+
+.mission-list {
+    list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px;
+}
+
+/* Estilo de Post-it Adaptado */
+.mission-item {
+    background-color: #fff9c4; color: #3e2723; padding: 12px;
+    box-shadow: 3px 3px 5px rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center;
+    font-size: 9px; position: relative; border-top-left-radius: 15px 5px; border-bottom-right-radius: 15px 5px;
+}
+
+.mission-item::before {
+    content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+    width: 15px; height: 8px; background-color: #ef5350; border-radius: 50%; box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.mission-item.completed { background-color: #a5d6a7; opacity: 0.8; }
+.mission-item.completed .mission-text { text-decoration: line-through; color: #2e7d32; }
+
+.mission-actions { display: flex; gap: 5px; }
+.btn-icon { background: transparent; border: none; font-size: 14px; cursor: pointer; transition: transform 0.2s; }
+.btn-icon:hover { transform: scale(1.2); }
+
+/* =========================================
+   AGENDA ACADÉMICA (Calendario)
+   ========================================= */
+.agenda-modal {
+    max-width: 700px;
+    background-color: #eaddcf; /* Color papel viejo/libreta */
+    background-image: linear-gradient(#bcaaa4 1px, transparent 1px);
+    background-size: 100% 25px; /* Renglones */
+}
+
+.agenda-form-panel {
+    width: 45%; border-right: 2px dashed #8d6e63; padding-right: 15px;
+}
+.agenda-list-panel {
+    width: 55%; padding-left: 15px; display: flex; flex-direction: column;
+}
+
+.agenda-input {
+    width: 100%; background: #fdf6e3; border: 2px solid #5d4037;
+    font-family: inherit; font-size: 9px; padding: 8px; margin-bottom: 10px;
+    box-sizing: border-box; color: #2c1a16;
+}
+
+.agenda-row { display: flex; gap: 10px; }
+
+.reminders-config {
+    background: rgba(141, 110, 99, 0.2); padding: 10px; border-radius: 5px; margin-bottom: 10px;
+}
+.reminders-config span { font-size: 8px; color: #3e2723; display: block; margin-bottom: 8px; }
+
+.checkbox-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-size: 8px; color: #2c1a16;
+}
+
+.event-list {
+    list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;
+}
+
+.event-item {
+    background: #fff; border-left: 5px solid #ef5350; padding: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-radius: 3px;
+}
+.event-item.type-TP { border-left-color: #42a5f5; }
+.event-item.type-Final { border-left-color: #ab47bc; }
+.event-item.type-Proyecto { border-left-color: #ffa726; }
+
+.event-info h4 { margin: 0 0 5px 0; font-size: 10px; color: #2c1a16; }
+.event-info p { margin: 0; font-size: 8px; color: #5d4037; }
+.event-date-badge {
+    background: #2c1a16; color: #fdf6e3; padding: 5px 8px; border-radius: 4px; font-size: 9px; text-align: center;
+}
+
+/* =========================================
+   MENÚ LATERAL DE ACCIONES (Botones Discretos)
+   ========================================= */
+.action-menu {
+    position: absolute;
+    top: 180px; /* Debajo de los stats/reloj */
+    right: 30px; /* Pegado al borde derecho */
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espacio entre botones */
+    z-index: 50;
+}
+
+.btn-action {
+    width: 130px; /* Botones pequeños y compactos */
+    text-align: left;
+    font-size: 10px;
+    padding: 12px;
+    background: #8d6e63;
+}
+
+.btn-action:hover {
+    background: #a1887f;
+}
+
+/* =========================================
+   MODAL DE LA PIZARRA (Ventana Centrada)
+   ========================================= */
+.corkboard-modal {
+    width: 450px;
+    max-width: 95%;
+    background-color: #c19a6b; 
+    background-image: radial-gradient(#8d6e63 1px, transparent 1px);
+    background-size: 10px 10px;
+    border-radius: 8px;
+}
+
+.wood-header {
+    background-color: #5a3c31 !important;
+    border-bottom: 3px solid #3e2723 !important;
+}
+
+.corkboard-modal .modal-body {
+    padding-top: 15px;
+}
+
+.corkboard-modal .mission-list {
+    max-height: 250px;
+}
+
+/* =========================================
+   MENÚ DE NAVEGACIÓN Y DESCRIPCIÓN (Fase 6)
+   Agregado al final para no tocar nada existente.
+   ========================================= */
+.main-nav {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.main-nav a {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: #fdf6e3;
+    background: rgba(44, 26, 22, 0.85);
+    border: 2px solid #8d6e63;
+    padding: 8px 12px;
+    text-decoration: none;
+}
+
+.main-nav a:hover {
+    border-color: #d08770;
+}
+
+.project-description {
+    position: absolute;
+    bottom: 6%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900; /* debajo del nav y los botones, pero visible */
+    max-width: 480px;
+    margin: 0;
+    padding: 12px 20px;
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    line-height: 1.8;
+    color: #fdf6e3;
+    text-shadow: 1px 1px 0 #000;
+    background: rgba(44, 26, 22, 0.55);
+    border: 2px solid rgba(141, 110, 99, 0.6);
+}
