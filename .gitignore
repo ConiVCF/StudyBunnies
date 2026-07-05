@@ -1,0 +1,10 @@
+# Configuración sensible (contiene API keys) - nunca se sube al repo
+backend/config/config.php
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
