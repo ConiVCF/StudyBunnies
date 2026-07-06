@@ -8,6 +8,8 @@ import { AudioManager } from '../systems/AudioManager.js';
 import { StudyRoom } from '../scenes/StudyRoom.js';
 import { MissionManager } from '../systems/MissionManager.js';
 import { CalendarManager } from '../systems/CalendarManager.js';
+import { UIDialog } from '../systems/UIDialog.js';
+import { Sanitizer } from '../utils/Sanitizer.js';
 
 class GameManager {
     constructor() {
@@ -44,17 +46,8 @@ class GameManager {
         this.player = new Player(localId, 200, 100, this.playerProfile.avatar, true);
         this.players[localId] = this.player;
 
-        // 🌟 SIMULADOR DE SERVIDOR BACKEND
-        setTimeout(() => {
-            // 🌟 CAMBIO: Usamos 'copo' (que sí existe) y quitamos la ropa por ahora
-            const francoAvatar = { base: 'copo', clothing: 'none', accessory: 'none' };
-            
-            // Creamos a Franco (isLocal = false)
-            this.players['Franco'] = new Player('Franco', 900, 100, francoAvatar, false);
-            
-            this.updateOnlineUI();
-            this.audio.playSFX('click'); 
-        }, 5000);
+        // 🌟 MULTIJUGADOR REAL (heartbeat contra MySQL, no un simulador)
+        this.iniciarMultijugador();
 
         this.updateOnlineUI();
 
@@ -81,9 +74,98 @@ class GameManager {
             listUl.innerHTML = '';
             playerIds.forEach(id => {
                 const li = document.createElement('li');
-                li.innerHTML = `${id === this.player.id ? `<b>${id}</b>` : id}`;
+                const nombreSeguro = Sanitizer.escapeHtml(id);
+                li.innerHTML = `${id === this.player.id ? `<b>${nombreSeguro}</b>` : nombreSeguro}`;
                 listUl.appendChild(li);
             });
+        }
+    }
+
+    // ==========================================
+    //   MULTIJUGADOR (heartbeat por polling contra MySQL)
+    // ==========================================
+    iniciarMultijugador() {
+        // Mandamos nuestra posición seguido...
+        this.intervaloEnvioPosicion = setInterval(() => this.enviarPosicion(), 400);
+
+        // ...y consultamos a los demás jugadores un poco menos seguido.
+        this.intervaloConsultaJugadores = setInterval(() => this.actualizarJugadoresRemotos(), 1000);
+        this.actualizarJugadoresRemotos(); // primera consulta inmediata, sin esperar el primer intervalo
+
+        // Al cerrar la pestaña o navegar a otra página, avisamos que nos vamos
+        // (sendBeacon funciona incluso si la página se está cerrando).
+        window.addEventListener('beforeunload', () => {
+            navigator.sendBeacon('salir_online.php');
+        });
+    }
+
+    async enviarPosicion() {
+        if (!window.SESION_PHP?.activa || !this.player) return;
+        if (document.getElementById('game-view').classList.contains('hidden')) return;
+
+        const datos = new FormData();
+        datos.append('x', this.player.x);
+        datos.append('y', this.player.y);
+        datos.append('direccion', this.player.facing);
+        datos.append('estado', this.player.state);
+        datos.append('avatar_base', this.player.appearance.base);
+        datos.append('avatar_clothing', this.player.appearance.clothing);
+        datos.append('avatar_accessory', this.player.appearance.accessory);
+
+        try {
+            await fetch('actualizar_posicion.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: datos
+            });
+        } catch (error) {
+            console.error("No se pudo enviar la posición al servidor:", error);
+        }
+    }
+
+    async actualizarJugadoresRemotos() {
+        if (!window.SESION_PHP?.activa) return;
+
+        try {
+            const respuesta = await fetch('listar_jugadores.php', { credentials: 'same-origin' });
+            if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+
+            const activos = await respuesta.json();
+            const idsActivos = new Set(activos.map(j => j.nombre_usuario));
+            let huboCambios = false;
+
+            // Crea o actualiza a cada jugador remoto activo
+            activos.forEach(j => {
+                const avatar = {
+                    base: j.avatar_base,
+                    clothing: j.avatar_clothing,
+                    accessory: j.avatar_accessory
+                };
+
+                if (this.players[j.nombre_usuario]) {
+                    this.players[j.nombre_usuario].applyRemoteState(
+                        parseFloat(j.pos_x), parseFloat(j.pos_y), j.direccion, j.estado, avatar
+                    );
+                } else {
+                    this.players[j.nombre_usuario] = new Player(
+                        j.nombre_usuario, parseFloat(j.pos_x), parseFloat(j.pos_y), avatar, false
+                    );
+                    huboCambios = true;
+                }
+            });
+
+            // Saca a los jugadores que ya no están activos (se desconectaron / cerraron la pestaña)
+            Object.keys(this.players).forEach(id => {
+                if (id !== this.player.id && !idsActivos.has(id)) {
+                    this.players[id].destroy();
+                    delete this.players[id];
+                    huboCambios = true;
+                }
+            });
+
+            if (huboCambios) this.updateOnlineUI();
+        } catch (error) {
+            console.error("No se pudieron actualizar los jugadores en línea:", error);
         }
     }
 
@@ -166,8 +248,8 @@ class GameManager {
         });
 
         // 🌟 El logout ahora es real: destruye la sesión de PHP de verdad.
-        btnLogoutNav?.addEventListener('click', () => {
-            if (confirm("¿Seguro que quieres cerrar sesión, conejito?")) {
+        btnLogoutNav?.addEventListener('click', async () => {
+            if (await UIDialog.confirm("¿Seguro que quieres cerrar sesión, conejito?", "🚪")) {
                 window.location.href = 'backend/controllers/AuthController.php?action=logout';
             }
         });
@@ -222,7 +304,7 @@ class GameManager {
             this.playerProfile.stats.level++;
             this.playerProfile.stats.exp -= expNeeded; 
             this.audio.playSFX('click'); 
-            alert(`¡Felicidades! Has alcanzado el Nivel ${this.playerProfile.stats.level} 🌟`);
+            UIDialog.alert(`¡Felicidades! Has alcanzado el Nivel ${this.playerProfile.stats.level} 🌟`, '🎉');
         }
 
         this.saveSystem.saveData(this.playerProfile);
@@ -260,7 +342,7 @@ class GameManager {
             this.audio.playSFX('click');
 
             if (!this.usuarioActivo) {
-                alert("¡Hola, conejito! Por favor, regístrate o inicia sesión para poder ir a estudiar.");
+                UIDialog.alert("¡Hola, conejito! Por favor, regístrate o inicia sesión para poder ir a estudiar.", "👋");
                 document.getElementById('login-modal').classList.remove('hidden');
                 return; 
             }
@@ -384,15 +466,23 @@ class GameManager {
     
     setupGlobalAudioEvents() { 
         window.addEventListener('playSFX', (e) => { this.audio.playSFX(e.detail); }); 
-        window.addEventListener('pomodoroCompleted', () => { this.audio.playSFX('click'); }); 
+        window.addEventListener('pomodoroCompleted', () => { this.audio.playSFX('logro'); }); 
+
+        // 🌟 Mientras el Profesor Michi piensa la respuesta, el conejo se queda atento
+        window.addEventListener('aiThinkingChanged', (e) => {
+            if (this.player) this.player.setAttentive(e.detail.thinking);
+        });
     } 
 
     update(deltaTime) {
         if (!this.player) return; 
         if (document.getElementById('game-view').classList.contains('hidden')) return;
 
-        // 🌟 Actualizamos a TODOS los jugadores de la sala
-        Object.values(this.players).forEach(p => p.update(deltaTime, this.room));
+        // 🌟 La física (gravedad, colisiones) solo corre para TU jugador.
+        // A los jugadores remotos los movemos con lo que llega del heartbeat (applyRemoteState).
+        Object.values(this.players).forEach(p => {
+            if (p.isLocal) p.update(deltaTime, this.room);
+        });
 
         const playerHitbox = this.player.getHitbox();
         const aiChatBox = document.getElementById('aiChat');
