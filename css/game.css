@@ -1,0 +1,364 @@
+:root {
+    --bg-dark-wood: #2c1a16;
+    --sunset-light: rgba(255, 140, 60, 0.2);
+    --ui-bg: rgba(44, 26, 22, 0.85);
+    --text-color: #fdf6e3;
+    --accent-color: #d08770;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--bg-dark-wood);
+    font-family: 'Press Start 2P', monospace;
+    color: var(--text-color);
+}
+
+#game-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Iluminación Cozy */
+#lighting-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--sunset-light);
+    pointer-events: none; /* Deja pasar los clicks al juego */
+    mix-blend-mode: overlay;
+    z-index: 10;
+}
+
+/* =========================================
+   DOM RENDERING (El Motor de la Cámara)
+   ========================================= */
+#world-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0; /* Punto de anclaje para el Zoom */
+    will-change: transform; 
+}
+
+#bg-room {
+    display: block;
+    width: 1500px; /* Tamaño gigante del mundo */
+    height: auto;
+    image-rendering: pixelated;
+}
+
+/* =========================================
+   ENTIDADES DINÁMICAS (Multijugador)
+   ========================================= */
+.player-entity {
+    position: absolute;
+    top: 0; left: 0;
+    width: 105px; height: 105px;
+    will-change: transform;
+    z-index: 5;
+}
+
+.player-entity img {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    image-rendering: pixelated;
+}
+
+/* 🌟 Estado "atento": mientras el Profesor Michi piensa la respuesta,
+   el conejo queda quieto con un brillo suave y un globito de "pensando". */
+.player-entity.attentive img {
+    animation: attentive-breathe 1.4s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px var(--accent-color));
+}
+
+.player-entity.attentive::after {
+    content: '💭';
+    position: absolute;
+    top: -32px;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-size: 16px;
+    animation: attentive-float 1.6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes attentive-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.035); }
+}
+
+@keyframes attentive-float {
+    0%, 100% { transform: translate(-50%, 0); opacity: 0.8; }
+    50% { transform: translate(-50%, -4px); opacity: 1; }
+}
+
+/* Letrero flotante con el nombre del usuario */
+.player-nametag {
+    position: absolute;
+    top: -15px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: #fdf6e3;
+    text-shadow: 1.5px 1.5px 0px #000;
+    white-space: nowrap;
+    background: rgba(44, 26, 22, 0.6);
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid #5d4037;
+}
+/* =========================================
+   CONTROLES DE VOLUMEN (Sliders)
+   ========================================= */
+.environment-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--ui-bg);
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #5a3c31;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.control-group button {
+    width: 155px; /* Tamaño fijo para que queden alineados */
+    text-align: left;
+}
+
+.control-label {
+    font-size: 10px;
+    color: var(--text-color);
+    width: 155px;
+    text-shadow: 1px 1px 0 #000;
+}
+
+/* Sliders con estilo Retro Pixelado */
+/* =========================================
+   CONTROLES DE VOLUMEN (Sliders Arreglados)
+   ========================================= */
+input[type=range] {
+    -webkit-appearance: none;
+    appearance: none; /* 🌟 Agregamos la propiedad estándar para quitar la advertencia */
+    width: 100px;
+    background: transparent;
+    margin: 8px 0; /* Espacio para que no se corte */
+}
+
+input[type=range]:focus {
+    outline: none;
+}
+
+/* 🌟 Thumb (La bolita) - Chrome/Safari/Edge */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+    background: #fdf6e3; /* Bolita en blanco hueso para que resalte */
+    cursor: pointer;
+    margin-top: -4px; /* Centra la bolita en la pista */
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 🌟 Track (La pista) - Chrome/Safari/Edge */
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: #5a3c31; /* Madera oscura para la barra base */
+    border-radius: 3px;
+    border: 1px solid #3e2723;
+}
+
+/* 🌟 Soporte para Firefox (Mismas reglas) */
+input[type=range]::-moz-range-thumb {
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+    background: #fdf6e3;
+    cursor: pointer;
+    border: none;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    background: #5a3c31;
+    border-radius: 3px;
+    border: 1px solid #3e2723;
+}
+
+/* =========================================
+   CHAT IA REDIMENSIONABLE (Regulador a la Izquierda)
+   ========================================= */
+#aiChat {
+    display: flex;
+    flex-direction: column;
+    resize: both;            
+    overflow: hidden;        
+    min-width: 280px;        
+    min-height: 250px;
+    max-width: 800px;        
+    max-height: 80vh;
+    /* 🌟 MAGIA: Esto mueve el regulador y el scroll a la izquierda */
+    direction: rtl; 
+}
+
+#aiChat.hidden {
+    display: none !important;
+}
+
+/* 🌟 Devolvemos el texto a la normalidad para que no se lea al revés */
+#aiChat .chat-header,
+#aiChat .chat-history,
+#aiChat input {
+    direction: ltr;
+}
+
+#chatHistory {
+    flex-grow: 1;            
+    overflow-y: auto;        
+    height: auto;
+}
+
+/* =========================================
+   PANTALLA DE MENÚ PRINCIPAL
+   ========================================= */
+.screen-home {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../assets/img/Fondo.gif'); /* Asegúrate de que esta imagen exista */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Cubre todo el juego */
+}
+
+/* Ocultador universal */
+.hidden { display: none !important; }
+
+/* Animación del Título que creaste */
+.titulo-animado {
+    width: 600px;
+    max-width: 90%;
+    position: absolute;
+    left: 50%; 
+    image-rendering: pixelated;
+    animation: aparecerYSubir 3.5s forwards ease-in-out;
+}
+
+@keyframes aparecerYSubir {
+    0% { top: 50%; transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+    30% { opacity: 1; }
+    70% { top: 50%; transform: translate(-50%, -50%) scale(1.2); }
+    100% { top: 24%; transform: translate(-50%, -50%) scale(0.7); } 
+}
+
+/* Aparición del Botón */
+.home-content {
+    opacity: 0;
+    animation: aparecerContenido 1s forwards 3s; 
+}
+
+@keyframes aparecerContenido {
+    to { opacity: 1; }
+}
+
+.btn-start-img {
+    width: 350px; 
+    cursor: pointer;
+    image-rendering: pixelated;
+    transition: transform 0.2s ease;
+    filter: drop-shadow(5px 5px 0px #2c1a16);
+}
+
+.btn-start-img:hover {
+    transform: scale(1.05); 
+    filter: drop-shadow(8px 8px 0px #2c1a16);
+}
+
+.btn-start-img:active {
+    transform: scale(0.95); 
+}
+
+.top-right-nav {
+    position: absolute;
+    top: 30px;    
+    right: 30px;
+    z-index: 1010; 
+}
+/* =========================================
+   EL PROFESOR GATITO (NPC)
+   ========================================= */
+#profesor-gatito {
+    position: absolute;
+    /* 🌟 Lo obligamos a aparecer justo en la cara de tu conejo */
+    left: 1200px;  
+    top: 240px;   
+    
+    /* 🌟 Lo hacemos enorme temporalmente para no perderlo de vista */
+    width: 80px;  
+    image-rendering: pixelated;
+    
+    /* 🌟 Lo ponemos por encima de TODO el mundo virtual */
+    z-index: 100;   
+    
+    animation: respirar 4s infinite ease-in-out;
+}
+
+/* =========================================
+   PANEL MULTIJUGADOR (Conectados)
+   ========================================= */
+.online-users-widget {
+    position: absolute;
+    top: 100px; left: 30px;
+    background: rgba(62, 39, 35, 0.85);
+    border: 3px solid #5a3c31;
+    border-radius: 8px;
+    padding: 10px;
+    min-width: 150px;
+}
+
+.online-header {
+    font-size: 10px; color: #a5d6a7;
+    margin-bottom: 10px; border-bottom: 2px dashed #8d6e63;
+    padding-bottom: 5px;
+}
+
+.online-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 8px;
+}
+
+.online-list li {
+    font-size: 9px; color: #fdf6e3;
+    display: flex; align-items: center; gap: 5px;
+}
+.online-list li::before {
+    content: '•'; color: #4caf50; font-size: 14px;
+}
