@@ -76,9 +76,11 @@
     font-size: 12px; padding: 10px 15px;
     cursor: pointer;
     box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
-    transition: transform 0.1s;
+    transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
 }
+.btn-pixel:hover:not(:disabled) { background: #6d4c41; transform: translate(-1px, -1px); box-shadow: 4px 4px 0px rgba(0,0,0,0.5); }
 .btn-pixel:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px rgba(0,0,0,0.5); }
+.btn-pixel:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
 
@@ -111,6 +113,77 @@
 #aiInput { background: #2c1a16; border: 2px solid #5d4037; color: white; font-family: 'Press Start 2P', monospace; font-size: 10px; padding: 10px; width: 100%; box-sizing: border-box; outline: none; }
 .user-msg { align-self: flex-end; background-color: var(--accent-color); color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 80%; word-wrap: break-word; }
 .ai-msg { align-self: flex-start; background-color: #4a3631; color: var(--text-color); padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 80%; word-wrap: break-word; }
+
+/* 🌟 Indicador de "escribiendo" (3 puntitos), reemplaza al texto fijo "🐾..." */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 14px !important;
+}
+.typing-indicator span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-color);
+    opacity: 0.4;
+    animation: typing-bounce 1.2s infinite ease-in-out;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* =========================================
+   TARJETA DE QUIZ (Profesor IA - opción múltiple)
+   ========================================= */
+.quiz-card {
+    align-self: stretch;
+    background-color: #3e2723;
+    border: 2px solid #8d6e63;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: quiz-pop-in 0.25s ease-out;
+}
+@keyframes quiz-pop-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.quiz-question { color: #ffcc80; font-weight: normal; line-height: 1.5; }
+.quiz-options { display: flex; flex-direction: column; gap: 6px; }
+.quiz-option-btn {
+    background: #2c1a16;
+    color: var(--text-color);
+    border: 2px solid #5d4037;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.quiz-option-btn:hover:not(:disabled) {
+    transform: translateX(3px);
+    border-color: var(--accent-color);
+}
+.quiz-option-btn:disabled { cursor: default; opacity: 0.85; }
+.quiz-option-btn.quiz-correct { background: #4caf50; border-color: #2e7d32; color: #fff; }
+.quiz-option-btn.quiz-incorrect { background: #c0392b; border-color: #7b241c; color: #fff; }
+.quiz-explanation {
+    background: rgba(0, 0, 0, 0.25);
+    border-left: 3px solid var(--accent-color);
+    padding: 8px 10px;
+    border-radius: 0 6px 6px 0;
+    line-height: 1.6;
+}
+.quiz-explanation.hidden { display: none; }
+
 /* --- Input y Botón de Adjuntar --- */
 .chat-input-wrapper {
     display: flex;
@@ -132,8 +205,11 @@
     cursor: pointer;
     padding: 0 10px;
     box-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
 }
+.btn-pixel-small:hover:not(:disabled) { background: #6d4c41; transform: translate(-1px, -1px); box-shadow: 3px 3px 0px rgba(0,0,0,0.5); }
 .btn-pixel-small:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0px rgba(0,0,0,0.5); }
+.btn-pixel-small:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
 /* --- Vista previa del Archivo (Cartelito superior) --- */
 #attachment-preview {
@@ -174,7 +250,8 @@
 
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8d6e63; padding-bottom: 10px; margin-bottom: 20px; }
 .modal-header h2 { font-size: 14px; margin: 0; }
-.close-btn { background: #e53935; color: white; border: 2px solid #b71c1c; font-family: inherit; cursor: pointer; }
+.close-btn { background: #e53935; color: white; border: 2px solid #b71c1c; font-family: inherit; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+.close-btn:hover { background: #f44336; transform: scale(1.08); }
 
 /* Maquetación del panel doble */
 .with-preview { display: flex; gap: 20px; align-items: flex-start; }
@@ -203,6 +280,17 @@
 .modal-footer { margin-top: 10px; text-align: center; border-top: 2px dashed #8d6e63; padding-top: 20px; }
 .save-btn { background: #4caf50; border-color: #2e7d32; font-size: 14px; padding: 12px 25px; }
 .save-btn:hover { background: #66bb6a; }
+
+/* =========================================
+   DIÁLOGOS PROPIOS (reemplazo de alert/confirm nativos)
+   ========================================= */
+.ui-dialog-box { width: 340px; max-width: 90%; text-align: center; z-index: 300; }
+.ui-dialog-box .modal-header { justify-content: center; border-bottom: none; margin-bottom: 5px; padding-bottom: 0; }
+.ui-dialog-box #ui-dialog-icon { font-size: 26px; }
+.ui-dialog-message { font-size: 11px; line-height: 1.8; margin: 10px 0 5px; white-space: pre-line; }
+.ui-dialog-actions { display: flex; justify-content: center; gap: 15px; }
+.ui-dialog-actions .btn-pixel, .ui-dialog-actions .btn-pixel-small { min-width: 90px; }
+#ui-dialog-overlay { z-index: 200; }
 
 /* =========================================
    NUEVO: MODAL DE CONFIGURACIÓN DEL TEMPORIZADOR
@@ -332,9 +420,10 @@
     cursor: pointer;
     padding: 3px 6px;
     border-radius: 3px;
-    transition: transform 0.1s;
+    transition: transform 0.1s, background 0.15s;
 }
 
+.txt-btn:hover { background: #6d4c41; transform: translateY(-1px); }
 .txt-btn:active {
     transform: scale(0.9);
 }
@@ -351,7 +440,7 @@
 }
 
 /* 🌟 Aplicación del tamaño dinámico a los mensajes */
-.ai-msg, .user-msg {
+.ai-msg, .user-msg, .quiz-question, .quiz-option-btn, .quiz-explanation {
     font-size: var(--chat-font-size);
     line-height: 1.5;
     transition: font-size 0.2s ease-in-out; /* Animación fluida al cambiar el tamaño */

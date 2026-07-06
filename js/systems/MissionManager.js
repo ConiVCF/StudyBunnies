@@ -1,4 +1,5 @@
 import { Sanitizer } from '../utils/Sanitizer.js';
+import { UIDialog } from './UIDialog.js';
 
 export class MissionManager {
     constructor(gameManager) {
@@ -136,7 +137,7 @@ export class MissionManager {
 
         // Verificamos que haya una sesión real de PHP activa
         if (!window.SESION_PHP?.activa || !usuarioActual) {
-            alert("¡Debes iniciar sesión para guardar misiones en la base de datos!");
+            await UIDialog.alert("¡Debes iniciar sesión para guardar misiones en la base de datos!", "🔒");
             return;
         }
 
@@ -224,7 +225,7 @@ export class MissionManager {
     }
 
     async deleteMission(id) {
-        if (!confirm("¿Eliminar este post-it?")) return;
+        if (!(await UIDialog.confirm("¿Eliminar este post-it?", "🗑️"))) return;
 
         try {
             const datos = new FormData();

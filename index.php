@@ -9,6 +9,8 @@ $isLoggedIn = isset($_SESSION['id_usuario']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cozy Study - Bunny World</title>
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/game.css">
     <link rel="stylesheet" href="css/ui.css">
@@ -297,6 +299,7 @@ $isLoggedIn = isset($_SESSION['id_usuario']);
                 <div id="attachment-preview" class="hidden"><span id="attachment-name">archivo.pdf</span><button id="btn-remove-attachment" title="Quitar archivo">X</button></div>
                 <div class="chat-input-wrapper">
                     <button id="btn-attach" class="btn-pixel-small" title="Subir archivo (PDF, JPG, PNG)">📎</button>
+                    <button id="btn-quiz" class="btn-pixel-small" title="Ponme a prueba con una pregunta">📝</button>
                     <input type="file" id="aiAttachment" accept="image/png, image/jpeg, application/pdf" class="hidden">
                     <input type="text" id="aiInput" placeholder="Pregunta algo al profesor..." autocomplete="off">
                 </div>

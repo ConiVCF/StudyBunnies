@@ -22,6 +22,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     }
 
+    // 🌟 Reemplazo de confirm() nativo por un modal propio con la misma
+    // paleta "cozy" del resto del sitio (ver estilos en admin.css).
+    // AdminPanel.js es un script clásico (no módulo ES6) por eso no
+    // reutiliza UIDialog.js del juego; es un mini-equivalente autocontenido.
+    let confirmOverlay = null;
+    function confirmarAccion(texto) {
+        if (!confirmOverlay) {
+            confirmOverlay = document.createElement('div');
+            confirmOverlay.className = 'admin-confirm-overlay hidden';
+            confirmOverlay.innerHTML = `
+                <div class="admin-confirm-box">
+                    <p id="admin-confirm-texto"></p>
+                    <div class="admin-confirm-actions">
+                        <button type="button" id="admin-confirm-no">No</button>
+                        <button type="button" id="admin-confirm-si">Sí</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmOverlay);
+        }
+
+        return new Promise((resolve) => {
+            confirmOverlay.querySelector('#admin-confirm-texto').textContent = texto;
+            const btnSi = confirmOverlay.querySelector('#admin-confirm-si');
+            const btnNo = confirmOverlay.querySelector('#admin-confirm-no');
+
+            const cerrar = (resultado) => {
+                confirmOverlay.classList.add('hidden');
+                btnSi.removeEventListener('click', onSi);
+                btnNo.removeEventListener('click', onNo);
+                resolve(resultado);
+            };
+            const onSi = () => cerrar(true);
+            const onNo = () => cerrar(false);
+
+            btnSi.addEventListener('click', onSi);
+            btnNo.addEventListener('click', onNo);
+            confirmOverlay.classList.remove('hidden');
+            btnSi.focus();
+        });
+    }
+
     async function cargarUsuarios() {
         try {
             const res = await fetch('admin_ajax.php?accion=listar_usuarios', { credentials: 'same-origin' });
@@ -161,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function eliminarMision(idMision) {
-        if (!confirm('¿Eliminar esta misión?')) return;
+        if (!(await confirmarAccion('¿Eliminar esta misión?'))) return;
 
         const datos = new FormData();
         datos.append('accion', 'eliminar_mision');

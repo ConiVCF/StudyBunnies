@@ -12,6 +12,8 @@ AuthGuard::requireRole(AuthGuard::ROL_ADMIN);
 <head>
     <meta charset="UTF-8">
     <title>Cozy Study - Panel de Administrador</title>
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/img/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/admin.css">
